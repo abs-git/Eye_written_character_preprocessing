@@ -1,6 +1,6 @@
 ## Eye written characters preprocessing
 
-[paper link]: https://www.mdpi.com/2079-9292/10/23/3009 "paper link"
+[paper link] (https://www.mdpi.com/2079-9292/10/23/3009 "paper link")
 
 > - Donghyun Kang
 > 
