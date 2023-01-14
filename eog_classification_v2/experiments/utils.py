@@ -21,6 +21,7 @@ def learn(model, train_batch, train_targets):
     loss = (loss/i)
     return acc, loss
 
+
 def evaluate(model, test_batch, test_targets):
     correct = 0
     i = 0
@@ -37,13 +38,13 @@ def evaluate(model, test_batch, test_targets):
     return acc
 
 
-def experiment(cfg, real_data, reference_data):
+def experiment(cfg, real_data, reference_data, zero_shot_cls=None):
 
     # data setting
     train_dict, test_dict = dh.train_test_split(real_data, cfg.split_ratio)
-    test_batch, test_targets = dh.get_test_batch(test_dict, reference_data, ref_key=cfg.ref_key)
+    test_batch, test_targets = dh.get_test_batch(test_dict, reference_data, ref_key=cfg.ref_key, zero_shot_cls=zero_shot_cls)
 
-    # model setting
+    # model & hyperparameters setting
     input_shape = test_batch[0][0][0].shape                # (length, points)
 
     if cfg.model_type == 'HybridBaseModel':
@@ -51,10 +52,8 @@ def experiment(cfg, real_data, reference_data):
     else:
         base_model = models.ViTBaseModel(input_shape, cfg.ViT_params)
 
+    optimizer = Adam(learning_rate = cfg.lr)
     model = models.binary_siamese_net(input_shape, base_model.model())
-
-    # hyperparameters setting
-    optimizer = Adam(learning_rate = 0.001)
     model.compile(loss = "binary_crossentropy", optimizer = optimizer, metrics = ['acc'])
 
     # learn & evaluate
@@ -63,7 +62,7 @@ def experiment(cfg, real_data, reference_data):
     test_acc_list = []
     for e in range(cfg.epochs):
 
-        train_batch, train_targets = dh.get_train_batch(train_dict, cfg.batch_size, cfg.n_batch, reference_data, ref_key=cfg.ref_key)
+        train_batch, train_targets = dh.get_train_batch(train_dict, cfg.batch_size, cfg.n_batch, reference_data, ref_key=cfg.ref_key, zero_shot_cls=zero_shot_cls)
         train_acc, train_loss = learn(model, train_batch, train_targets)
         test_acc = evaluate(model, test_batch, test_targets)
 
@@ -71,7 +70,6 @@ def experiment(cfg, real_data, reference_data):
         train_loss_list.append(train_loss)
         test_acc_list.append(test_acc)
 
-        if e % 10 == 0:    
-            print('epoch : {}, train acc : {:.4f} %, train loss : {:.8f}, test acc : {:.4f} %, '.format(e+1, train_acc, train_loss, test_acc))
+        print('epoch : {}, train acc : {:.4f} %, train loss : {:.8f}, test acc : {:.4f} %, '.format(e+1, train_acc, train_loss, test_acc))
     
     return model, train_acc_list, train_loss_list, test_acc_list

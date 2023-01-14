@@ -25,8 +25,11 @@ def train_test_split(data_dict, test_rate=0.2):
     return train_set, test_set
 
 
-def get_train_batch(data_dict, batch_size, n_batch, ref_dict=None, ref_key=None):
+def get_train_batch(data_dict, batch_size, n_batch, ref_dict=None, ref_key=None, zero_shot_cls=None):
     classes = list(data_dict.keys())
+
+    if zero_shot_cls:
+        classes.pop(int(zero_shot_cls))
 
     train_batch = []
     train_targets = []
@@ -75,10 +78,12 @@ def get_train_batch(data_dict, batch_size, n_batch, ref_dict=None, ref_key=None)
     return train_batch, train_targets
 
 
-
-def get_test_batch(data_dict, ref_dict, ref_key):
+def get_test_batch(data_dict, ref_dict, ref_key, zero_shot_cls=None):
     classes = list(data_dict.keys())
     n_class = len(classes)
+
+    if zero_shot_cls:
+        classes.pop(int(zero_shot_cls))
 
     test_batch = []
     test_targets = []
@@ -98,6 +103,25 @@ def get_test_batch(data_dict, ref_dict, ref_key):
             test_targets.append(targets)
 
     return test_batch, test_targets
+
+def get_zero_shot_batch(data_dict, ref_dict, ref_key, zero_shot_cls):
+    classes = list(data_dict.keys())
+    n_class = len(classes)
+
+    zero_shot_batch = []
+    zero_shot_targets = []
+    for value in data_dict[zero_shot_cls]:
+        anchors = np.array([value]*n_class)
+        comparison = np.array(list(ref_dict[ref_key].values())).squeeze(axis=1)
+        
+        pairs = list(np.array([anchors, comparison]))
+        targets = np.zeros((n_class,1))
+        targets[int(zero_shot_cls)]=1
+
+        zero_shot_batch.append(pairs)
+        zero_shot_targets.append(targets)
+
+    return zero_shot_batch, zero_shot_targets
 
 
 def plot_images(input_list, task='train'):
