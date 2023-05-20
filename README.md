@@ -14,7 +14,7 @@
 >
 > In the version 2 <br>
 > We refactored these pipeline. <br>
-> The new pipeline contains 4 functinos following 'Data normalization -> Removing closed points -> Fill points & Points Minimization -> Distance re-adjust' <br>
+> The new pipeline contains 4 functions following 'Data normalization -> Removing closed points -> Fill points & Points Minimization -> Distance re-adjust' <br>
 > And, we added more datasets for the robust experiments as a 'without eye blink removing characters' and 'katakana characters' <br>
 >
 > As the result, we could save the time for preprocessing from 40.7s to 15.1s using the 'eye blink removed characters'
